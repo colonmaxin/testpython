@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hệ Thống Đóng Gói Bao Bì</title>
+<style>
+:root {
+--bg-gradient: linear-gradient(135deg, #667eea, #764ba2);
+--box-bg: #ffffff;
+--text-color: #333333;
+--label-color: #555555;
+--input-bg: #ffffff;
+--input-border: #cccccc;
+--input-text: #333333;
+--link-color: #667eea;
+}
+[data-theme="dark"] {
+--bg-gradient: linear-gradient(135deg, #1a1c29, #2c163a);
+--box-bg: #1e1e2f;
+--text-color: #ffffff;
+--label-color: #bbbbbb;
+--input-bg: #2a2a40;
+--input-border: #44445c;
+--input-text: #ffffff;
+--link-color: #8ab4f8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; transition: background 0.3s, color 0.3s; }
+body { background: #f4f7f6; padding: 20px; color: var(--text-color); }
+.container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; flex-wrap: wrap; gap: 15px; }
+.store-brand { display: flex; align-items: center; gap: 12px; }
+.store-logo { width: 50px; height: 50px; object-fit: cover; border-radius: 50%; border: 2px solid #667eea; }
+.header h2 { color: #333; font-size: 22px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.btn-auth-link { background: #667eea; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: bold; cursor: pointer; border: none; }
+.btn-auth-link:hover { background: #5563c1; }
+.logout-btn { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 14px; }
+.logout-btn:hover { background: #c0392b; }
+.lang-select { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; background: white; font-size: 14px; cursor: pointer; }
+.nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab-btn { background: #e0e0e0; color: #333; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; font-size: 14px; cursor: pointer; border: none; }
+.tab-btn.active { background: #667eea; color: white; }
+section { margin-bottom: 30px; display: none; }
+section.active { display: block; }
+h3 { margin-bottom: 10px; color: #444; border-left: 4px solid #667eea; padding-left: 8px; }
+h4 { margin-top: 15px; margin-bottom: 8px; color: #555; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; font-size: 14px; vertical-align: middle; }
+th { background-color: #667eea; color: white; }
+tr:hover { background-color: #f9f9f9; cursor: pointer; }
+.badge { background: #2ecc71; color: white; padding: 3px 7px; border-radius: 4px; font-size: 11px; }
+.badge-admin { background: #e67e22; }
+.badge-member { background: #3498db; }
+.form-inline { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+.form-inline input, .form-inline select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; flex: 1; min-width: 130px; }
+.form-inline button { background: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+.form-inline button:hover { background: #27ae60; }
+.action-btn { padding: 4px 8px; border-radius: 3px; text-decoration: none; font-size: 12px; color: white; margin-right: 4px; display: inline-block; border: none; cursor: pointer; }
+.delete-btn { background: #e74c3c; }
+.delete-btn:hover { background: #c0392b; }
+.edit-btn { background: #f39c12; }
+.edit-btn:hover { background: #d68910; }
+.product-thumb { width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; transition: transform 0.2s; }
+.product-thumb:hover { transform: scale(1.1); }
+.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+.modal-content { max-width: 80%; max-height: 80%; border-radius: 8px; }
+.close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 35px; font-weight: bold; cursor: pointer; }
+.shop-layout { display: flex; gap: 20px; align-items: flex-start; }
+.category-sidebar { width: 180px; min-width: 180px; background: #fafafa; border: 1px solid #ddd; border-radius: 6px; padding: 12px; }
+.category-sidebar h4 { margin-top: 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 6px; margin-bottom: 8px; font-size: 14px; }
+.category-list { list-style: none; }
+.category-list li { margin-bottom: 6px; }
+.category-list a { display: block; padding: 6px 10px; border-radius: 4px; text-decoration: none; color: #333; font-size: 13px; font-weight: 500; background: #eee; cursor: pointer; }
+.category-list a:hover, .category-list a.active { background: #667eea; color: white; }
+.product-main { flex: 1; }
+.search-bar { margin-bottom: 15px; }
+.search-bar input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; outline: none; }
+.search-bar input:focus { border-color: #667eea; }
+.auth-overlay { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+.auth-box { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 380px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); position: relative; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="header">
+<div class="store-brand">
+<img id="storeLogoImg" src="https://via.placeholder.com/50" alt="Logo" class="store-logo">
+<h2 id="storeTitle">Hệ Thống Đóng Gói Bao Bì</h2>
+</div>
+<div class="header-right">
+<select class="lang-select" id="langSelect" onchange="switchLang(this.value)">
+<option value="vi">🇻🇳 VN</option>
+<option value="tw">🇹🇼 繁體</option>
+</select>
+<div id="authHeaderArea">
+<button class="btn-auth-link" onclick="openLoginModal()" id="btnLoginText">🔐 Đăng Nhập</button>
+</div>
+</div>
+</div>
+
+<div class="nav-tabs">
+<button class="tab-btn active" onclick="switchTab('shop')" id="tabShopText">📦 Danh Sách Bao Bì</button>
+<button class="tab-btn" onclick="switchTab('admin')" id="tabAdminText" style="display:none;">⚙️ Quản Trị Hệ Thống</button>
+</div>
+
+<!-- TAB 1: DANH SÁCH BAO BÌ -->
+<section id="shopSection" class="active">
+<div class="shop-layout">
+<div class="category-sidebar">
+<h4 id="sidebarCatTitle">📂 Danh Mục</h4>
+<ul class="category-list" id="categorySidebarList">
+<li><a class="active" onclick="filterCategory('')" id="allCatText">🌟 Tất cả</a></li>
+</ul>
+</div>
+<div class="product-main">
+<h3 id="mainListTitle">Danh Sách Bao Bì Đóng Gói</h3>
+<div class="search-bar">
+<input type="text" id="searchInput" placeholder="🔍 Tìm kiếm theo ký tự bao bì hoặc mã đóng gói..." onkeyup="realtimeSearch()">
+</div>
+<table id="productTable">
+<thead>
+<tr id="tableHeaderRow"></tr>
+</thead>
+<tbody id="productTableBody"></tbody>
+</table>
+<p id="noResult" style="display: none; color: #777; text-align: center; padding: 20px;">Không tìm thấy bao bì phù hợp.</p>
+</div>
+</div>
+</section>
+
+<!-- TAB 2: QUẢN TRỊ ADMIN -->
+<section id="adminSection">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #eef2ff; padding: 12px 15px; border-radius: 6px; border: 1px solid #c7d2fe;">
+  <span id="adminWelcomeMsg" style="font-weight: bold; color: #4338ca;">Đang ở chế độ Quản trị viên</span>
+  <button onclick="switchToClientView()" style="background: #4f46e5; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">👤 Chuyển sang Giao Diện Khách Hàng</button>
+</div>
+
+<!-- Cài đặt tên cửa hàng -->
+<div style="background: #fafafa; padding: 15px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 20px;">
+<h3 id="adminStoreTitle">Cài Đặt Tên Cửa Hàng</h3>
+<div class="form-inline">
+<input type="text" id="adminStoreNameInput" placeholder="Tên hệ thống...">
+<button onclick="updateStoreName()" style="background: #3498db;" id="updateStoreBtn">Cập Nhật</button>
+</div>
+</div>
+
+<!-- Tùy chỉnh cột / Thêm cột mới / Xóa cột -->
+<div style="background: #f0f4ff; padding: 15px; border-radius: 6px; border: 1px solid #bcd0ff; margin-bottom: 20px;">
+<h3 id="adminColTitle">Tùy Chỉnh Tiêu Đề Cột Cố Định</h3>
+<div class="form-inline">
+<input type="text" id="colImageInput" placeholder="Cột Ảnh">
+<input type="text" id="colIdInput" placeholder="Cột Ký Tự">
+<input type="text" id="colCatInput" placeholder="Cột Danh Mục">
+<input type="text" id="colNameInput" placeholder="Cột Mã Đóng Gói">
+<input type="text" id="colPriceInput" placeholder="Cột Loại Bao Đóng">
+<input type="text" id="colQtyInput" placeholder="Cột Số Lượng">
+<button onclick="updateColumnHeaders()" style="background: #3498db;" id="saveColBtn">Lưu Tên Cột</button>
+</div>
+
+<h4 style="margin-top: 20px;">Thêm Cột Thông Tin Mới</h4>
+<div class="form-inline">
+<input type="text" id="newColNameInput" placeholder="Tên cột mới (VD: Kích thước, Nhà sản xuất)...">
+<button onclick="addCustomColumn()" style="background: #2ecc71;">Tạo Cột Mới</button>
+</div>
+
+<h4 style="margin-top: 15px;">Danh Sách Cột Tùy Chỉnh Đã Tạo</h4>
+<div id="customColsList" style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
+</div>
+
+<!-- Quản lý tài khoản (Chỉ Admin) -->
+<div style="background: #fdf4ff; padding: 15px; border-radius: 6px; border: 1px solid #f5d0fe; margin-bottom: 20px;">
+<h3 id="adminUserMgmtTitle">Quản Lý Tài Khoản (Chỉ Admin)</h3>
+<table id="adminUserTable">
+<thead>
+<tr>
+<th>Tài Khoản</th>
+<th>Quyền Hạn</th>
+<th>Thao Tác</th>
+</tr>
+</thead>
+<tbody id="adminUserTableBody"></tbody>
+</table>
+<h4 style="margin-top: 15px;">Tạo Tài Khoản Mới</h4>
+<div class="form-inline">
+<input type="text" id="newUsernameInput" placeholder="Tên tài khoản...">
+<input type="password" id="newPasswordInput" placeholder="Mật khẩu...">
+<select id="newUserRole">
+<option value="Admin">Admin</option>
+<option value="Member">Member</option>
+</select>
+<button onclick="createNewUser()" style="background: #9333ea;">Tạo Tài Khoản</button>
+</div>
+</div>
+
+<!-- Quản lý danh mục -->
+<div style="margin-bottom: 25px;">
+<h3 id="adminCatMgmtTitle">Quản Lý Danh Mục</h3>
+<table id="adminCatTable">
+<thead>
+<tr>
+<th id="thCatId">Mã Danh Mục</th>
+<th id="thCatName">Tên Danh Mục</th>
+<th id="thCatAction">Thao Tác</th>
+</tr>
+</thead>
+<tbody id="adminCatTableBody"></tbody>
+</table>
+<h4 style="margin-top: 15px;">Thêm Danh Mục Mới</h4>
+<div class="form-inline">
+<input type="text" id="newCatIdInput" placeholder="Mã DM (VD: CAT03)...">
+<input type="text" id="newCatNameInput" placeholder="Tên danh mục...">
+<button onclick="addCategory()">Thêm Danh Mục</button>
+</div>
+</div>
+
+<!-- QUẢN LÝ BAO BÌ & ĐÓNG GÓI -->
+<div style="margin-bottom: 30px;">
+<h3 id="adminProdMgmtTitle">Quản Lý Bao Bì & Đóng Gói</h3>
+<table id="adminProdTable">
+<thead>
+<tr id="adminProdHeaderRow"></tr>
+</thead>
+<tbody id="adminProdTableBody"></tbody>
+</table>
+<h4 id="addSubTitle" style="margin-top: 15px;">Thêm / Sửa Bao Bì (Tải ảnh từ điện thoại)</h4>
+<div class="form-inline" id="addProdFormContainer"></div>
+</div>
+</section>
+</div>
+
+<!-- MODAL ĐĂNG NHẬP -->
+<div id="authModal" class="auth-overlay">
+<div class="auth-box">
+<span style="float: right; font-size: 24px; cursor: pointer;" onclick="closeLoginModal()">&times;</span>
+<h2 id="loginModalTitle" style="text-align: center; margin-bottom: 20px;">Đăng Nhập Hệ Thống</h2>
+<div class="form-inline" style="flex-direction: column; align-items: stretch;">
+<input type="text" id="loginUser" placeholder="Tài khoản...">
+<input type="password" id="loginPass" placeholder="Mật khẩu...">
+<button onclick="handleLogin()" style="background: #667eea; padding: 10px; width: 100%; border: none; color: white; font-weight: bold; border-radius: 4px; cursor: pointer;">Đăng Nhập</button>
+</div>
+<p id="loginErrorMsg" style="color: #e74c3c; text-align: center; margin-top: 10px; font-size: 13px;"></p>
+</div>
+</div>
+
+<!-- MODAL ẢNH PHÓNG TO / THU NHỎ -->
+<div id="imageModal" class="modal" onclick="closeImageModal()">
+<span class="close-modal">&times;</span>
+<img class="modal-content" id="modalImg">
+</div>
+
+<script>
+let appData = {
+lang: 'vi',
+store: { name: 'Hệ Thống Đóng Gói Bao Bì', logo: '' },
+headers: {
+col_image: 'Ảnh',
+col_id: 'Ký tự bao bì',
+col_cat: 'Danh Mục',
+col_name: 'Mã đóng gói',
+col_price: 'Loại bao đóng',
+col_qty: 'Số lượng hàng đóng'
+},
+custom_columns: [],
+users: [
+{ username: 'colonmaxin', pass: 'minh994', name: 'Quản Trị Viên Hệ Thống', role: 'Admin' }
+],
+categories: [
+{ id: 'CAT01', name: 'Bao Bì Giấy' },
+{ id: 'CAT02', name: 'Bao Bì Nhựa' }
+],
+products: [
+{ id: 'BB01', cat_id: 'CAT01', name: 'Gói-A1', price: 'Hộp Cứng', qty: 100, image: '', custom_data: {} },
+{ id: 'BB02', cat_id: 'CAT01', name: 'Gói-B2', price: 'Túi Zip', qty: 250, image: '', custom_data: {} },
+{ id: 'BB03', cat_id: 'CAT02', name: 'Gói-C3', price: 'Màng Co', qty: 500, image: '', custom_data: {} }
+],
+currentUser: null,
+selectedCat: '',
+editingProdId: null
+};
+
+const dicts = {
+vi: {
+login_btn: '🔐 Đăng Nhập',
+logout_btn: 'Đăng Xuất',
+welcome: 'Xin chào',
+tab_shop: '📦 Danh Sách Bao Bì',
+tab_admin: '⚙️ Quản Trị Hệ Thống',
+sidebar_cat: '📂 Danh Mục',
+all_cat: '🌟 Tất cả',
+search_placeholder: '🔍 Tìm kiếm theo ký tự bao bì hoặc mã đóng gói...',
+table_empty: 'Trống',
+no_result: 'Không tìm thấy bao bì phù hợp.',
+admin_store_setting: 'Cài Đặt Tên Cửa Hàng',
+update_store_btn: 'Cập Nhật',
+admin_cat_mgmt: 'Quản Lý Danh Mục',
+cat_id_th: 'Mã Danh Mục',
+cat_name_th: 'Tên Danh Mục',
+action_th: 'Thao Tác',
+delete_btn: 'Xóa',
+edit_btn: 'Sửa',
+add_prod_btn: 'Thêm Mới',
+login_error: 'Sai tài khoản hoặc mật khẩu!'
+},
+tw: {
+login_btn: '🔐 登入',
+logout_btn: '登出',
+welcome: '你好',
+tab_shop: '📦 包裝清單',
+tab_admin: '⚙️ 系統管理',
+sidebar_cat: '📂 分類',
+all_cat: '🌟 全部',
+search_placeholder: '🔍 搜尋包裝字元或包裝代碼...',
+table_empty: '無',
+no_result: '找不到符合的包裝材料。',
+admin_store_setting: '商店名稱設定',
+update_store_btn: '更新',
+admin_cat_mgmt: '分類管理',
+cat_id_th: '分類代碼',
+cat_name_th: '分類名稱',
+action_th: '操作',
+delete_btn: '刪除',
+edit_btn: '編輯',
+add_prod_btn: '新增',
+login_error: '帳號或密碼錯誤！'
+}
+};
+
+function render() {
+let lang = appData.lang;
+let t = dicts[lang];
+
+document.getElementById('storeTitle').innerText = appData.store.name;
+document.getElementById('tabShopText').innerText = t.tab_shop;
+document.getElementById('tabAdminText').innerText = t.tab_admin;
+document.getElementById('sidebarCatTitle').innerText = t.sidebar_cat;
+document.getElementById('allCatText').innerText = t.all_cat;
+document.getElementById('searchInput').placeholder = t.search_placeholder;
+
+let authArea = document.getElementById('authHeaderArea');
+if(appData.currentUser) {
+  authArea.innerHTML = `<span style="font-size: 14px; margin-right: 10px;">${t.welcome}, <b>${appData.currentUser.name}</b></span> <button class="logout-btn" onclick="handleLogout()">${t.logout_btn}</button>`;
+  if(appData.currentUser.role === 'Admin') {
+    document.getElementById('tabAdminText').style.display = 'inline-block';
+  } else {
+    document.getElementById('tabAdminText').style.display = 'none';
+  }
+} else {
+  authArea.innerHTML = `<button class="btn-auth-link" onclick="openLoginModal()">${t.login_btn}</button>`;
+  document.getElementById('tabAdminText').style.display = 'none';
+}
+
+let catListHtml = `<li><a class="${appData.selectedCat === '' ? 'active' : ''}" onclick="filterCategory('')">${t.all_cat}</a></li>`;
+appData.categories.forEach(c => {
+catListHtml += `<li><a class="${appData.selectedCat === c.id ? 'active' : ''}" onclick="filterCategory('${c.id}')">${c.name}</a></li>`;
+});
+document.getElementById('categorySidebarList').innerHTML = catListHtml;
+
+let h = appData.headers;
+let thHtml = `<th>${h.col_image}</th><th>${h.col_id}</th><th>${h.col_cat}</th><th>${h.col_name}</th><th>${h.col_price}</th><th>${h.col_qty}</th>`;
+appData.custom_columns.forEach(cc => { thHtml += `<th>${cc}</th>`; });
+document.getElementById('tableHeaderRow').innerHTML = thHtml;
+
+let prodHtml = '';
+appData.products.forEach(p => {
+let catObj = appData.categories.find(c => c.id === p.cat_id);
+let catName = catObj ? catObj.name : 'Khác';
+let customTd = '';
+appData.custom_columns.forEach(cc => {
+let val = (p.custom_data && p.custom_data[cc]) ? p.custom_data[cc] : '';
+customTd += `<td>${val}</td>`;
+});
+
+let imgSrc = p.image ? p.image : '';
+prodHtml += `<tr class="product-row" data-cat="${p.cat_id}" data-search="${p.id.toLowerCase()} ${p.name.toLowerCase()}" onclick="${imgSrc ? `openImageModal('${imgSrc}')` : ''}">
+<td>${imgSrc ? `<img src="${imgSrc}" class="product-thumb" alt="Ảnh">` : `<span style="color:#999;font-size:11px;">${t.table_empty}</span>`}</td>
+<td><b>${p.id}</b></td>
+<td>${catName}</td>
+<td>${p.name}</td>
+<td>${p.price}</td>
+<td>${p.qty}</td>
+${customTd}
+</tr>`;
+});
+document.getElementById('productTableBody').innerHTML = prodHtml;
+realtimeSearch();
+
+if (appData.currentUser && appData.currentUser.role === 'Admin') {
+renderAdmin();
+}
+}
+
+function renderAdmin() {
+let lang = appData.lang;
+let t = dicts[lang];
+let h = appData.headers;
+
+document.getElementById('adminStoreTitle').innerText = t.admin_store_setting;
+document.getElementById('adminStoreNameInput').value = appData.store.name;
+
+document.getElementById('colImageInput').value = h.col_image;
+document.getElementById('colIdInput').value = h.col_id;
+document.getElementById('colCatInput').value = h.col_cat;
+document.getElementById('colNameInput').value = h.col_name;
+document.getElementById('colPriceInput').value = h.col_price;
+document.getElementById('colQtyInput').value = h.col_qty;
+
+let customColsHtml = '';
+appData.custom_columns.forEach(cc => {
+  customColsHtml += `<span style="background: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">${cc} <button onclick="deleteCustomColumn('${cc}')" style="background:#e74c3c; color:white; border:none; border-radius:3px; padding:1px 5px; cursor:pointer; font-size:11px;">&times;</button></span>`;
+});
+document.getElementById('customColsList').innerHTML = customColsHtml || '<span style="color:#777; font-size:13px;">Chưa có cột tùy chỉnh nào.</span>';
+
+let userTableHtml = '';
+appData.users.forEach(u => {
+  userTableHtml += `<tr><td><b>${u.username}</b> (${u.name})</td><td><span class="badge ${u.role === 'Admin' ? 'badge-admin' : 'badge-member'}">${u.role}</span></td><td>${u.username !== 'colonmaxin' ? `<button onclick="deleteUser('${u.username}')" class="action-btn delete-btn">${t.delete_btn}</button>` : 'Mặc định'}</td></tr>`;
+});
+document.getElementById('adminUserTableBody').innerHTML = userTableHtml;
+
+let catTableHtml = '';
+appData.categories.forEach(c => {
+catTableHtml += `<tr><td><b>${c.id}</b></td><td>${c.name}</td><td><button onclick="deleteCategory('${c.id}')" class="action-btn delete-btn">${t.delete_btn}</button></td></tr>`;
+});
+document.getElementById('adminCatTableBody').innerHTML = catTableHtml;
+
+let adminTh = `<th>${h.col_image}</th><th>${h.col_id}</th><th>${h.col_cat}</th><th>${h.col_name}</th><th>${h.col_price}</th><th>${h.col_qty}</th>`;
+appData.custom_columns.forEach(cc => { adminTh += `<th>${cc}</th>`; });
+adminTh += `<th>${t.action_th}</th>`;
+document.getElementById('adminProdHeaderRow').innerHTML = adminTh;
+
+let adminProdBody = '';
+appData.products.forEach(p => {
+let catObj = appData.categories.find(c => c.id === p.cat_id);
+let catName = catObj ? catObj.name : 'Khác';
+let customTd = '';
+appData.custom_columns.forEach(cc => {
+let val = (p.custom_data && p.custom_data[cc]) ? p.custom_data[cc] : '';
+customTd += `<td>${val}</td>`;
+});
+adminProdBody += `<tr>
+<td>${p.image ? `<img src="${p.image}" class="product-thumb" onclick="openImageModal('${p.image}')" alt="Ảnh">` : `<span style="color:#999;font-size:11px;">${t.table_empty}</span>`}</td>
+<td><b>${p.id}</b></td>
+<td>${catName}</td>
+<td>${p.name}</td>
+<td>${p.price}</td>
+<td>${p.qty}</td>
+${customTd}
+<td>
+  <button onclick="startEditProduct('${p.id}')" class="action-btn edit-btn">${t.edit_btn}</button>
+  <button onclick="deleteProduct('${p.id}')" class="action-btn delete-btn">${t.delete_btn}</button>
+</td>
+</tr>`;
+});
+document.getElementById('adminProdTableBody').innerHTML = adminProdBody;
+
+let catOptions = '';
+appData.categories.forEach(c => { catOptions += `<option value="${c.id}">${c.name}</option>`; });
+
+let customInputs = '';
+appData.custom_columns.forEach(cc => {
+let editingProd = appData.products.find(p => p.id === appData.editingProdId);
+let val = (editingProd && editingProd.custom_data) ? (editingProd.custom_data[cc] || '') : '';
+customInputs += `<input type="text" id="addCustom_${cc}" placeholder="${cc}..." value="${val}" style="min-width:110px;">`;
+});
+
+let pId = '', pCat = '', pName = '', pPrice = '', pQty = 0;
+if(appData.editingProdId) {
+  let found = appData.products.find(p => p.id === appData.editingProdId);
+  if(found) {
+    pId = found.id; pCat = found.cat_id; pName = found.name; pPrice = found.price; pQty = found.qty;
+  }
+}
+
+document.getElementById('addProdFormContainer').innerHTML = `
+<input type="text" id="newProdId" placeholder="${h.col_id}..." value="${pId}" ${appData.editingProdId ? 'readonly style="background:#eee;min-width:90px;"' : 'style="min-width:90px;"'}>
+<select id="newProdCat">${catOptions}</select>
+<input type="text" id="newProdName" placeholder="${h.col_name}..." value="${pName}">
+<input type="text" id="newProdPrice" placeholder="${h.col_price}..." value="${pPrice}" style="min-width:90px;">
+<input type="number" id="newProdQty" placeholder="${h.col_qty}..." value="${pQty}" style="min-width:70px;">
+${customInputs}
+<input type="file" id="newProdImage" accept="image/*" style="font-size:12px;padding:2px;">
+<button onclick="saveProduct()" style="background:${appData.editingProdId ? '#f39c12' : '#2ecc71'}">${appData.editingProdId ? t.edit_btn : t.add_prod_btn}</button>
+${appData.editingProdId ? `<button onclick="cancelEdit()" style="background:#7f8c8d;margin-left:5px;">Hủy</button>` : ''}
+`;
+if(pCat) document.getElementById('newProdCat').value = pCat;
+}
+
+function switchLang(lang) {
+appData.lang = lang;
+render();
+}
+
+function switchTab(tab) {
+if(tab === 'shop') {
+document.getElementById('shopSection').classList.add('active');
+document.getElementById('adminSection').classList.remove('active');
+} else {
+if(!appData.currentUser || appData.currentUser.role !== 'Admin') {
+openLoginModal();
+return;
+}
+document.getElementById('shopSection').classList.remove('active');
+document.getElementById('adminSection').classList.add('active');
+}
+}
+
+function switchToClientView() {
+  switchTab('shop');
+  let btnText = appData.lang === 'vi' ? 'Quay lại Trang Quản Trị' : '返回管理頁面';
+  document.getElementById('authHeaderArea').innerHTML = `<button class="btn-auth-link" onclick="switchTab('admin')">⚙️ ${btnText}</button> <button class="logout-btn" onclick="handleLogout()">${dicts[appData.lang].logout_btn}</button>`;
+}
+
+function filterCategory(catId) {
+appData.selectedCat = catId;
+render();
+}
+
+function realtimeSearch() {
+let input = document.getElementById('searchInput').value.toLowerCase().trim();
+let rows = document.getElementsByClassName('product-row');
+let visibleCount = 0;
+
+for (let i = 0; i < rows.length; i++) {
+let row = rows[i];
+let rowCat = row.getAttribute('data-cat');
+let searchText = row.getAttribute('data-search');
+let matchCat = (!appData.selectedCat || rowCat === appData.selectedCat);
+let matchSearch = (!input || searchText.includes(input));
+
+if (matchCat && matchSearch) {
+row.style.display = "";
+visibleCount++;
+} else {
+row.style.display = "none";
+}
+}
+document.getElementById('noResult').style.display = (visibleCount === 0) ? "block" : "none";
+}
+
+function openLoginModal() {
+document.getElementById('authModal').style.display = 'flex';
+}
+function closeLoginModal() {
+document.getElementById('authModal').style.display = 'none';
+}
+
+function handleLogin() {
+let u = document.getElementById('loginUser').value.trim();
+let p = document.getElementById('loginPass').value.trim();
+let foundUser = appData.users.find(usr => usr.username === u && usr.pass === p);
+
+if(foundUser) {
+appData.currentUser = foundUser;
+closeLoginModal();
+if(foundUser.role === 'Admin') {
+  switchTab('admin');
+} else {
+  switchTab('shop');
+}
+render();
+} else {
+document.getElementById('loginErrorMsg').innerText = dicts[appData.lang].login_error;
+}
+}
+
+function handleLogout() {
+appData.currentUser = null;
+switchTab('shop');
+render();
+}
+
+function updateColumnHeaders() {
+appData.headers.col_image = document.getElementById('colImageInput').value.trim() || 'Ảnh';
+appData.headers.col_id = document.getElementById('colIdInput').value.trim() || 'Ký tự bao bì';
+appData.headers.col_cat = document.getElementById('colCatInput').value.trim() || 'Danh Mục';
+appData.headers.col_name = document.getElementById('colNameInput').value.trim() || 'Mã đóng gói';
+appData.headers.col_price = document.getElementById('colPriceInput').value.trim() || 'Loại bao đóng';
+appData.headers.col_qty = document.getElementById('colQtyInput').value.trim() || 'Số lượng hàng đóng';
+render();
+alert("Đã lưu tên các cột!");
+}
+
+function addCustomColumn() {
+let colName = document.getElementById('newColNameInput').value.trim();
+if(colName && !appData.custom_columns.includes(colName)) {
+appData.custom_columns.push(colName);
+document.getElementById('newColNameInput').value = '';
+render();
+} else {
+alert("Tên cột trống hoặc đã tồn tại!");
+}
+}
+
+function deleteCustomColumn(colName) {
+if(confirm(`Bạn có chắc muốn xóa cột "${colName}" không?`)) {
+appData.custom_columns = appData.custom_columns.filter(c => c !== colName);
+appData.products.forEach(p => {
+  if(p.custom_data) delete p.custom_data[colName];
+});
+render();
+}
+}
+
+function createNewUser() {
+  let username = document.getElementById('newUsernameInput').value.trim();
+  let pass = document.getElementById('newPasswordInput').value.trim();
+  let role = document.getElementById('newUserRole').value;
+  if(username && pass) {
+    if(appData.users.some(u => u.username === username)) {
+      alert("Tài khoản đã tồn tại!");
+      return;
+    }
+    appData.users.push({ username, pass, name: username, role });
+    document.getElementById('newUsernameInput').value = '';
+    document.getElementById('newPasswordInput').value = '';
+    render();
+    alert("Đã tạo tài khoản mới thành công!");
+  } else {
+    alert("Vui lòng nhập đầy đủ tên tài khoản và mật khẩu!");
+  }
+}
+
+function deleteUser(username) {
+  appData.users = appData.users.filter(u => u.username !== username);
+  render();
+}
+
+function updateStoreName() {
+let name = document.getElementById('adminStoreNameInput').value.trim();
+if(name) { appData.store.name = name; render(); alert("Đã cập nhật tên cửa hàng!"); }
+}
+
+function addCategory() {
+let id = document.getElementById('newCatIdInput').value.trim();
+let name = document.getElementById('newCatNameInput').value.trim();
+if(id && name) {
+appData.categories.push({ id, name });
+document.getElementById('newCatIdInput').value = '';
+document.getElementById('newCatNameInput').value = '';
+render();
+}
+}
+
+function deleteCategory(id) {
+appData.categories = appData.categories.filter(c => c.id !== id);
+render();
+}
+
+function startEditProduct(id) {
+appData.editingProdId = id;
+render();
+}
+
+function cancelEdit() {
+appData.editingProdId = null;
+render();
+}
+
+function saveProduct() {
+let id = document.getElementById('newProdId').value.trim();
+let cat_id = document.getElementById('newProdCat').value;
+let name = document.getElementById('newProdName').value.trim();
+let price = document.getElementById('newProdPrice').value.trim();
+let qty = parseInt(document.getElementById('newProdQty').value) || 0;
+let custom_data = {};
+
+appData.custom_columns.forEach(cc => {
+let valInput = document.getElementById(`addCustom_${cc}`);
+if(valInput) custom_data[cc] = valInput.value.trim();
+});
+
+let fileInput = document.getElementById('newProdImage');
+
+if(id && name) {
+if(fileInput.files && fileInput.files[0]) {
+let reader = new FileReader();
+reader.onload = function(e) {
+processSave(id, cat_id, name, price, qty, e.target.result, custom_data);
+}
+reader.readAsDataURL(fileInput.files[0]);
+} else {
+let existingImg = '';
+if(appData.editingProdId) {
+  let found = appData.products.find(p => p.id === id);
+  if(found) existingImg = found.image;
+}
+processSave(id, cat_id, name, price, qty, existingImg, custom_data);
+}
+} else {
+alert("Vui lòng nhập Ký tự bao bì và Mã đóng gói!");
+}
+}
+
+function processSave(id, cat_id, name, price, qty, image, custom_data) {
+if(appData.editingProdId) {
+  let index = appData.products.findIndex(p => p.id === id);
+  if(index !== -1) {
+    appData.products[index] = { id, cat_id, name, price, qty, image, custom_data };
+  }
+  appData.editingProdId = null;
+} else {
+  if(appData.products.some(p => p.id === id)) {
+    alert("Ký tự bao bì đã tồn tại! Vui lòng chọn ký tự khác.");
+    return;
+  }
+  appData.products.push({ id, cat_id, name, price, qty, image, custom_data });
+}
+render();
+}
+
+function deleteProduct(id) {
+if(confirm("Bạn có chắc muốn xóa bao bì này không?")) {
+appData.products = appData.products.filter(p => p.id !== id);
+render();
+}
+}
+
+function openImageModal(src) {
+document.getElementById('imageModal').style.display = 'flex';
+document.getElementById('modalImg').src = src;
+}
+
+function closeImageModal() {
+document.getElementById('imageModal').style.display = 'none';
+}
+
+window.onload = function() {
+render();
+}
+</script>
+
+</body>
+</html>
